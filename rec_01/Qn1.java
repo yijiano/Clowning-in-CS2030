@@ -7,7 +7,7 @@ public class Qn1 {
             .noneMatch(x -> n % x == 0);
     }
 
-    private static int numPrimeFactors(int n) {
+    private static int countPrimeFactors(int n) {
         return (int) IntStream.rangeClosed(1, n)
             .filter(x -> n % x == 0)
             .filter(x -> isPrime(x)).count();
@@ -15,7 +15,7 @@ public class Qn1 {
 
     private static IntStream omega(int n) {
         return IntStream.rangeClosed(1, n)
-            .map(x -> numPrimeFactors(x));
+            .map(x -> countPrimeFactors(x));
     }
 
     public static void main(String args[]) {
