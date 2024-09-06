@@ -31,6 +31,8 @@ The use of t() and u() methods suggests that they are getter methods that return
 **EDIT:** Apparently its not a violation because that is the purpose of the `Pair` class.
 
 # Q3)
+My first attempt:
+
 ```java
 boolean isOverlap(Circle other) {
     
@@ -41,5 +43,21 @@ boolean isOverlap(Circle other) {
     double distance = this.centre.get().distanceTo(other.centree.get());
 
     return distance < (this.radius + other.radius);
+}
+```
+Prof Henry:
+
+```java
+boolean isOverlap(Circle other) {
+    
+    //note!! if you .map an optional (`centre` in this case), you get an optional<T>!!
+    // flatMap is used instead of map or else you have an optional<optional<boolean>>!
+
+    return this.centre
+        .flatMap(c ->
+            other.centre
+                .map(k -> k.distanceTo(c) < this.radius + other.radius)
+            )
+        .orElse(false);
 }
 ```
