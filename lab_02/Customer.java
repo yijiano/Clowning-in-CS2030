@@ -1,18 +1,18 @@
 public class Customer {
     private final int id;
-    private final double arrival_time;
+    private final double arrivalTime;
 
-    Customer(int id, double arrival_time) {
+    Customer(int id, double arrivalTime) {
         this.id = id;
-        this.arrival_time = arrival_time;
+        this.arrivalTime = arrivalTime;
     }
 
     public boolean canBeServed(double time) {
-        return this.arrival_time >= time;
+        return this.arrivalTime >= time;
     }
 
-    public double serveTill (double service_time) {
-        return this.arrival_time + service_time;
+    public double serveTill(double serviceTime) {
+        return this.arrivalTime + serviceTime;
     }
 
     @Override

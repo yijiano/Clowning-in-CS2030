@@ -1,6 +1,6 @@
 import java.util.List;
 
-class Simulator {
+public class Simulator {
     private final int numOfServers;
     private final int numOfCustomers;
     private final List<Pair<Integer,Double>> arrivals;
