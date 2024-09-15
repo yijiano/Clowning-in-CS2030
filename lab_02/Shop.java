@@ -24,8 +24,9 @@ public class Shop {
     }
 
     public Shop update(Server newServer) {
-        List<Server> newServerList = this.serverList.stream()
-            .map(s -> s.getId() == newServer.getId() ? newServer : s)
+        List<Server> newServerList = this.serverList
+            .stream()
+            .map(s -> s.isSameId(newServer) ? newServer : s)
             .toList();
         return new Shop(newServerList);
     }

@@ -2,38 +2,43 @@ import java.util.Optional;
 
 public class State {
     private final Shop shop;
-    private final Customer customer;
+    private final Optional<Customer> customer;
+    private final String outputString;
 
     State(Shop shop) {
         this.shop = shop;
-        this.customer = null;
+        this.customer = Optional.empty(); 
+        this.outputString = "";
     }
 
     State(Shop shop, Customer customer) {
         this.shop = shop;
-        this.customer = customer;
+        this.customer = Optional.of(customer);
+        this.outputString = customer + " arrives" + "\n";
     }
 
-    public State next(State nextState) {
-        if (this.customer == null) {
-            return nextState;
-        }
+    private State(Shop shop, Customer customer, String outputString) {
+        this.customer = Optional.of(customer);
 
-        return this.shop.findServer(this.customer)
-            .map(server -> {
-                Server updatedServer = server.serve(this.customer, 1.0);
-                Shop updatedShop = this.shop.update(updatedServer);
-                System.out.println(this.customer + " served by " + server);
-                return new State(updatedShop, nextState.customer);
-            })
-            .orElseGet(() -> {
-                System.out.println(this.customer + "leaves");
-                return nextState;
-            });
+        Optional<Server> newServer = shop.findServer(customer);
+
+        this.shop = newServer.map(x -> shop.update(x.serve(customer, 1.0)))
+            .orElse(shop);
+
+        this.outputString = outputString + customer
+            + newServer.map(x -> new String(" served by " + x))
+                .orElse(new String(" leaves"))
+            + "\n";
+    }
+
+    public State next(State newState) {
+        return newState.customer
+            .map(x -> new State(this.shop, x, this.outputString + newState.outputString))
+            .orElse(this);
     }
 
     @Override
     public String toString() {
-        return this.customer == null ? "" : this.customer + " arrives";
+        return outputString;
     }
 }

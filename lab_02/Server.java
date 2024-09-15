@@ -12,16 +12,16 @@ public class Server {
         this.nextAvailableTime = nextAvailableTime;
     }
 
-    public int getId() {
-        return this.id;
-    }
-    
     public Server serve(Customer c, double serviceTime) {
         return new Server(this.id, c.serveTill(serviceTime));
     }
 
     public boolean canServe(Customer c) {
         return c.canBeServed(this.nextAvailableTime);
+    }
+
+    public boolean isSameId(Server otherServer) {
+        return this.id == otherServer.id;
     }
 
     @Override
