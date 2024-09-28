@@ -10,15 +10,15 @@ public class Booking implements Comparable<Booking> {
     public Booking(Driver driver, Request request) {
         this.driver = driver;
         this.driverType = driver.getType();
-        this.fare = lowestFare(request);
-        this.service = lowestFareService(request);
+        this.fare = driver.lowestFare(request);
+        this.service = driver.lowestFareService(request);
         this.request = request;
     }
     
     private Booking(Driver driver, Request request, Service service) {
         this.driver = driver;
         this.driverType = driver.getType();
-        this.fare = calculateFare(request, service);
+        this.fare = driver.calculateFare(request, service);
         this.service = service;
         this.request = request;
     }
@@ -27,32 +27,11 @@ public class Booking implements Comparable<Booking> {
         return a < b ? a : b;
     }
 
-    private int calculateFare(Request request, Service service) {
-        return request.computeFare(service);
-    }
-
-    private int lowestFare(Request request) {      
-        return this.driverType.equals("NormalCab")
-            ? min(calculateFare(request, new JustRide()), calculateFare(request, new TakeACab()))
-            : min(calculateFare(request, new JustRide()), calculateFare(request, new ShareARide()));
-    }
-
-    private Service lowestFareService(Request request) {
-        return this.driverType.equals("NormalCab")
-            ? calculateFare(request, new JustRide()) < calculateFare(request, new TakeACab())
-                ? new JustRide()
-                : new TakeACab()
-            : calculateFare(request, new JustRide()) < calculateFare(request, new ShareARide())
-                ? new JustRide()
-                : new ShareARide();
-    }
-
     public List<Booking> listAllServices() {
-        return this.driverType.equals("NormalCab")
-            ? List.of(new Booking(this.driver, this.request, new JustRide()),
-                new Booking(this.driver, this.request, new TakeACab()))
-            : List.of(new Booking(this.driver, this.request, new JustRide()),
-                new Booking(this.driver, this.request, new ShareARide()));
+        return this.driver.getServices()
+            .stream()
+            .map(service -> new Booking(this.driver, this.request, service))
+            .toList();
     }
 
     @Override
