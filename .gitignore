@@ -25,4 +25,4 @@ replay_pid*
 
 #Other file types
 *.swp
-*.jsh
+*/open.jsh
