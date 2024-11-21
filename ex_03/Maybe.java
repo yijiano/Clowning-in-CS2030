@@ -1,5 +1,6 @@
 import java.util.function.Predicate;
 import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 class Maybe<T> {
@@ -35,17 +36,18 @@ class Maybe<T> {
         return Maybe.<T>empty();
     }
 
-    <R> Maybe<R> map(Function<? super T, ? extends R> mapper) {
-        if (this.isEmpty()) {
-            return Maybe.<R>empty();
+    void ifPresent(Consumer<? super T> consumer) {
+        if (!this.isEmpty()) {
+            consumer.accept(this.get());
         }
-
-        R r = mapper.apply(this.get());
-        return Maybe.<R>of(r);
     }
 
-    <R> Maybe<R> flatMap(Function<? super T, Optional<? extends R>> mapper) {
-        return null;
+    void ifPresentOrElse(Consumer<? super T> consumer, Runnable emptyAction) {
+        if (!this.isEmpty()) {
+            consumer.accept(this.get());
+        } else {
+            emptyAction.run();
+        }
     }
 
     T orElse(T other) {
@@ -62,12 +64,44 @@ class Maybe<T> {
         return this.get();
     }
 
+    Maybe<T> or(Supplier<? extends Maybe<? extends T>> supplier) {
+        if (!this.isEmpty()) {
+            return this;
+        }
+        Maybe<? extends T> result = supplier.get();
+        return Maybe.of(result.get());
+    }
+
+    <R> Maybe<R> map(Function<? super T, ? extends R> mapper) {
+        if (this.isEmpty()) {
+            return Maybe.<R>empty();
+        }
+
+        R r = mapper.apply(this.get());
+        return Maybe.<R>of(r);
+    }
+
+    <R> Maybe<R> flatMap(Function<? super T, ? extends Maybe<? extends R>> mapper) {
+        if (this.isEmpty()) {
+            return Maybe.<R>empty();
+        }
+        
+        Maybe<? extends R> result = mapper.apply(this.value);
+        return Maybe.of(result.get());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj instanceof Maybe<?> other) {
+            if (this.isEmpty() && other.isEmpty()) {
+                return true;
+            }
+            if (this.isEmpty() || other.isEmpty()) {
+                return false;
+            }
             return this.get().equals(other.get());
         }
         return false;

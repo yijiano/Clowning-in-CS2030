@@ -1,8 +1,8 @@
 import java.util.function.Supplier;
 import java.util.function.Function;
 
-interface Try {
-    static<T> Try<T> of(Supplier<? extends T> supplier) {
+interface Try<T> {
+    static <T> Try<T> of(Supplier<? extends T> supplier) {
         try {
             return succ(supplier.get());
         } catch (Exception ex) {
@@ -12,6 +12,10 @@ interface Try {
 
     private static <T> Try<T> succ(T t) {
         return new Try<T>() {
+            public T get() {
+                return t;
+            }
+
             public T orElse(T other) {
                 return t;
             }
@@ -19,24 +23,37 @@ interface Try {
             public T orElseGet(Supplier<? extends T> s) {
                 return t;
             }
-
-            public <R> Try<R> map (Function<? super T, ? extends R> mapper) {
-                R r = mapper.apply(t);
-                return Try.<R>of(() -> r);
+            
+            public boolean equals(Object obj) {
+                if (obj == this) {
+                    return true;
+                }
+                if (obj instanceof Try<?> other) {
+                    return this.get().equals(other.get());
+                }
+                return false;
             }
 
-            public <R> Try<R> flatMap (Function<? super T, ? extends Try<? extends R>> mapper) {
+            public <R> Try<R> map(Function<? super T, ? extends R> mapper) {
+                return Try.<R>of(() -> mapper.apply(t));
+            }
+
+            public <R> Try<R> flatMap(Function<? super T, ? extends Try<? extends R>> mapper) {
                 return mapper.apply(t).map(Function.<R>identity());
             }
 
             public String toString() {
-                return "Succcess: " + t;
+                return "Success: " + t;
             }
         };
     }
 
     private static <T> Try<T> fail(Exception ex) {
         return new Try<T>() {
+            public Exception get() {
+                return ex;
+            }
+
             public T orElse(T other) {
                 return other;
             }
@@ -45,11 +62,15 @@ interface Try {
                 return s.get();
             }
 
-            public <R> Try<R> map (Function<? super T, ? extends R> m) {
+            public boolean equals(Object obj) {
+                return this.toString().equals(obj.toString());
+            }
+
+            public <R> Try<R> map(Function<? super T, ? extends R> m) {
                 return Try.<R>fail(ex);
             }
 
-            public <R> Try<R> flatMap (Function<? super T, ? extends Try<? extends R>> m) {
+            public <R> Try<R> flatMap(Function<? super T, ? extends Try<? extends R>> m) {
                 return Try.<R>fail(ex);
             }
 
@@ -59,6 +80,15 @@ interface Try {
         };
     }
 
-    <R> Try<R> map (Function<? super T, ? extends R> m);
-    <R> Try<R> flatMap (Function<? super T, ? extends R> m);
+    <R> Try<R> map(Function<? super T, ? extends R> mapper);
+
+    <R> Try<R> flatMap(Function<? super T, ? extends Try<? extends R>> mapper);
+
+    Object get();
+
+    T orElse(T other);
+
+    T orElseGet(Supplier<? extends T> supplier);
+
+    boolean equals(Object obj);
 }
