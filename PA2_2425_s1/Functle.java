@@ -3,72 +3,72 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 class Functle<T extends Movable<T>> {
-    private final Function<T, T> normal;
-    private final Function<T, T> reverse;
+    private final Function<T, T> movementBuffer;
+    private final Function<T, T> reverseBuffer;
 
     private Functle() {
-        this.normal = Function.identity();
-        this.reverse = Function.identity();
+        this.movementBuffer = Function.identity();
+        this.reverseBuffer = Function.identity();
     }
 
-    private Functle(Function<T, T> normal, Function<T, T> reverse) {
-        this.normal = normal;
-        this.reverse = reverse;
+    private Functle(Function<T, T> movementBuffer, Function<T, T> reverseBuffer) {
+        this.movementBuffer = movementBuffer;
+        this.reverseBuffer = reverseBuffer;
     }
 
     static <T extends Movable<T>> Functle<T> of() {
         return new Functle<T>();
     }
 
-    Functle<T> forward(int step) {
+    Functle<T> forward(int steps) {
         Function<T, T> move = t -> {
-            t.moveForward(step);
+            t.moveForward(steps);
             return t;
         };
         Function<T, T> moveReverse = t -> {
-            t.moveForward(-step);
+            t.moveForward(-steps);
             return t;
         };
-        return new Functle<T>(this.normal.andThen(move),
-            this.reverse.compose(moveReverse));
+        return new Functle<T>(this.movementBuffer.andThen(move),
+            this.reverseBuffer.compose(moveReverse));
     }
 
-    Functle<T> backward(int step) {
-        return forward(-step);
+    Functle<T> backward(int steps) {
+        return forward(-steps);
     }
 
-    Functle<T> left(int theta) {
+    Functle<T> left(int numRightAngles) {
         Function<T, T> turn = t -> {
-            t.turnLeft(theta);
+            t.turnLeft(numRightAngles);
             return t;
         };
         Function<T, T> turnReverse = t -> {
-            t.turnLeft(-theta);
+            t.turnLeft(-numRightAngles);
             return t;
         };
-        return new Functle<T>(this.normal.andThen(turn),
-            this.reverse.compose(turnReverse));
+        return new Functle<T>(this.movementBuffer.andThen(turn),
+            this.reverseBuffer.compose(turnReverse));
     }
 
-    Functle<T> right(int theta) {
-        return left(-theta);
+    Functle<T> right(int numRightAngles) {
+        return left(-numRightAngles);
     }
 
-    void run(T t) {
-        this.normal.apply(t);
+    void run(T inputT) {
+        this.movementBuffer.apply(inputT);
     }
 
     Functle<T> reverse() {
-        if (this.reverse.equals(Function.identity())) {
+        if (this.reverseBuffer.equals(Function.identity())) {
             return this;
         }
-        Function<T, T> reversedFunction = this.normal.andThen(this.reverse);
-        return new Functle<T>(reversedFunction, Function.identity());
+        Function<T, T> reverseBufferdFunction = this.movementBuffer.andThen(this.reverseBuffer);
+        return new Functle<T>(reverseBufferdFunction, Function.identity());
     }
 
     Functle<T> andThen(Functle<T> other) {
-        return new Functle<T>(this.normal.andThen(other.normal),
-            this.reverse.compose(other.reverse));
+        return new Functle<T>(this.movementBuffer.andThen(other.movementBuffer),
+            this.reverseBuffer.compose(other.reverseBuffer));
     }
 
     Functle<T> loop(int n) {
@@ -80,11 +80,11 @@ class Functle<T extends Movable<T>> {
 
     Functle<T> comeHome() {
         Function<T, T> function = t -> {
-            Stream.iterate(Pair.of(this.normal, this.reverse),
+            Stream.iterate(Pair.of(this.movementBuffer, this.reverseBuffer),
                 pair -> !t.equals(() -> pair.t().apply(t)),
                 pair -> Pair.of(
-                    pair.t().andThen(this.normal),
-                    pair.u().compose(this.reverse)))
+                    pair.t().andThen(this.movementBuffer),
+                    pair.u().compose(this.reverseBuffer)))
                 .forEach(pair -> pair.u().apply(t));
             return t;
         };
